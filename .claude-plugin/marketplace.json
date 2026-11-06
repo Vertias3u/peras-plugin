@@ -1,0 +1,16 @@
+{
+  "name": "peras",
+  "owner": {
+    "name": "Vertias3u"
+  },
+  "plugins": [
+    {
+      "name": "peras",
+      "source": "./",
+      "description": "Set up and run Peras from inside Claude Code."
+    }
+  ],
+  "metadata": {
+    "description": "Peras for Claude Code: stop Claude at a usage line you set."
+  }
+}

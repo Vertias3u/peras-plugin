@@ -1,0 +1,10 @@
+{
+  "name": "peras",
+  "version": "0.1.0",
+  "description": "Set up Peras, the usage-limit guard for Claude Code, from inside Claude Code, run it with no model call, and watch your limits above the prompt.",
+  "author": { "name": "Vertias3u" },
+  "homepage": "https://peras.vertias.eu",
+  "repository": "https://github.com/Vertias3u/peras-plugin",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}
