@@ -23,7 +23,7 @@ In Claude Code:
 
 Then restart Claude Code. It needs Claude Code 2.1.287 or later, a Pro or Max login, and Node.js.
 
-To update it, run `/plugin update peras@peras`. To remove the plugin, run `/plugin uninstall peras@peras`. That leaves Peras's hooks in place; [What it does to your machine](#what-it-does-to-your-machine) says how to remove them too.
+To update it, run `claude plugin update peras@peras` in a terminal, or open `/plugin` in Claude Code and update Peras from the menu, then restart Claude Code. To remove the plugin, run `claude plugin uninstall peras@peras`. That leaves Peras's hooks in place; [What it does to your machine](#what-it-does-to-your-machine) says how to remove them too.
 
 ## What you get
 
