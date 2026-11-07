@@ -333,12 +333,14 @@ export const register: Register = (on) => {
   })
 
   // Peras's own answers are the only source for "paused". The band never works a
-  // pause out from the percentages, so it can't claim one that isn't there.
-  on('classic.PreToolUse', async ($, e, next) => {
+  // pause out from the percentages, so it can't claim one that isn't there. Peras's
+  // PreToolUse refusal reaches tool.call as the call's error. This hook only reads
+  // it: it never takes part in the permission decision.
+  on('tool.call', async ($, e, next) => {
     const result = await next(e)
-    const { deny } = result as { deny?: unknown }
-    if (isPerasRefusal(deny)) await update($, paused, () => true)
-    else if (deny === undefined) await update($, paused, () => false)
+    const refusal = result.deny ?? (result.isError ? result.text : undefined)
+    if (isPerasRefusal(refusal)) await update($, paused, () => true)
+    else if (result.deny === undefined) await update($, paused, () => false)
     return result
   })
 
