@@ -72,6 +72,37 @@ The `/peras` commands run the Peras program you installed, so they do what that 
 
 The plugin itself reads your limits from Claude Code, reads `~/.peras/config.json` and its settings to mark your lines, watches Peras's hook answers to show a pause, and remembers your band style. On styles that replace the status line, it reads Peras's install record in `~/.peras/install` and changes the status line command Claude Code runs in that session, so Peras keeps running with its text dropped. Peras's "could not run" message still shows. Nothing is written to `settings.json`, and the line returns when the plugin is off. It sends nothing anywhere, and Peras has no telemetry.
 
+## Exactly what the mod runs, reads and changes
+
+The plugin is a mod: code that runs inside Claude Code with your permissions. All of it is in `hooks/`, as readable TypeScript.
+
+**Programs it runs, and why.** It starts programs only with Claude Code's `process.run`, never through a shell:
+
+- `npx --yes peras-cli@0.5.0 setup`, in your home folder, only when you type `/peras setup` and Peras isn't set up (not installed, or none of its hooks are in your settings). This installs Peras.
+- The Peras program that setup installed, exactly as Peras's install record in `~/.peras/install/` names it: `node` and the path to `~/.peras/app/bin/peras.mjs`, with any `NAME=value` settings at the start of the command passed as environment variables. The mod reads that command without a shell and runs it only if it is exactly a program and a path ending in `peras.mjs`. It adds these arguments:
+  - `status` for `/peras`, `why` for `/peras lines`, and the words you typed for `/peras set`, `/peras pause`, `/peras resume` and `/peras doctor`
+  - `doctor` for `/peras setup` when Peras is already set up, or `setup` when Peras is there but some of its hooks are missing
+  - `usage --json`, read-only, at most once a minute after Claude replies, for the forecast on the band
+
+**What it sends, and where.** Nothing leaves your machine from the mod itself. The only network use is `npx` downloading `peras-cli` from the npm registry when you type `/peras setup`. The programs above get only the arguments listed and the environment variables from Peras's install record, and what they print is shown to you and nowhere else.
+
+**What it reads.** The environment variables `HOME`, `PERAS_HOME` and `CLAUDE_CONFIG_DIR`; the files `~/.peras/install/*.json` and `~/.peras/config.json`, and whether the recorded `peras.mjs` exists; the `hooks` and `statusLine` settings; and, from Claude Code, your rate-limit readings and the session's folder.
+
+**What it keeps.** Your band style, across sessions. For the current session only: the latest readings, your lines, whether Peras paused Claude, and the forecast.
+
+**Each hook, what it does and what it changes:**
+
+| Hook | What it does | What it changes |
+|---|---|---|
+| `session.start` | Adds `/peras`, loads your band style and lines, and says once if Peras isn't set up | Nothing |
+| `command.run` for `/peras` | Answers `/peras` by running the programs above | Nothing else |
+| `settings.read` | On `mini`, `line` and `full`, when the status line is Peras's own and nothing else, wraps its command so Peras still runs but its text is dropped. Peras's "could not run" message still shows | The status line command Claude Code runs, in this session only. Nothing is written to `settings.json`, and other settings and other status lines are left alone |
+| `session.measure` | Reads your 5-hour and weekly limits for the band, and asks Peras for the forecast | Nothing |
+| `turn.start`, `turn.complete` | Starts and stops the timer that animates Clawd, on the main turn only | Nothing |
+| `tool.call` | Reads whether Peras refused the call, to show "paused" | Nothing: every call and its result pass on unchanged |
+| `classic.PostToolBatch` | Reads whether Peras stopped the turn, to show "paused" | Nothing |
+| `ui.render` above the prompt | Draws the band | Nothing else |
+
 ## Limits
 
 - It's for Claude Code only, not claude.ai or Cowork.
